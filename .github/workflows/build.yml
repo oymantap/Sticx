@@ -21,6 +21,12 @@ jobs:
         java-version: '17'
         cache: 'gradle'
 
+    # PAKSA PAKAI GRADLE VERSION 8.5 (Biar ga bentrok)
+    - name: Setup Gradle
+      uses: gradle/actions/setup-gradle@v3
+      with:
+        gradle-version: '8.5'
+
     - name: Grant Execute Permission for Gradle
       run: chmod +x gradlew
 
@@ -32,3 +38,4 @@ jobs:
       with:
         name: Sticx
         path: app/build/outputs/apk/debug/app-debug.apk
+
