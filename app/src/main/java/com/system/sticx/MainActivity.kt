@@ -20,16 +20,15 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
-            // ALAT BUAT BUKA FILE MANAGER / GALERI
+            // ALAT TERBARU: Memaksa membuka berkas dokumen/file manager
             val filePickerLauncher = rememberLauncherForActivityResult(
                 contract = ActivityResultContracts.GetContent()
             ) { uri: Uri? ->
                 if (uri != null) {
-                    // Kalau user selesai milih file .webp, langsung oper ke WhatsApp
                     kirimKeWhatsApp()
-                    Toast.makeText(this, "File terpilih! Mengirim ke WhatsApp...", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(this, "Berhasil memuat file stiker!", Toast.LENGTH_SHORT).show()
                 } else {
-                    Toast.makeText(this, "Batal milih file", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(this, "Batal memilih file", Toast.LENGTH_SHORT).show()
                 }
             }
 
@@ -42,12 +41,11 @@ class MainActivity : ComponentActivity() {
                         Text(text = "Sticx Sticker Injector Engine", style = MaterialTheme.typography.headlineSmall)
                         Spacer(modifier = Modifier.height(20.dp))
                         
-                        // TOMBOL UTAMA BUAT BUKA GALERI
                         Button(onClick = { 
-                            // Membuka file picker khusus untuk mencari file .webp atau gambar
-                            filePickerLauncher.launch("image/*") 
+                            // Menggunakan Open Document / All Files biar masuk ke File Manager internal
+                            filePickerLauncher.launch("*/*") 
                         }) {
-                            Text(text = "PILIH .WEBP & KIRIM KE WA")
+                            Text(text = "BUKA FILE MANAGER & PILIH STIKER")
                         }
                     }
                 }
@@ -66,7 +64,7 @@ class MainActivity : ComponentActivity() {
         try {
             startActivity(intent)
         } catch (e: Exception) {
-            Toast.makeText(this, "WhatsApp tidak ditemukan!", Toast.LENGTH_LONG).show()
+            Toast.makeText(this, "Akses gagal: Pastikan WhatsApp resmi terinstall!", Toast.LENGTH_LONG).show()
             e.printStackTrace()
         }
     }
