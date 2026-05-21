@@ -20,15 +20,23 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
-            // ALAT TERBARU: Memaksa membuka berkas dokumen/file manager
+            // Launcher buat buka File Manager asli HP
             val filePickerLauncher = rememberLauncherForActivityResult(
-                contract = ActivityResultContracts.GetContent()
+                contract = ActivityResultContracts.OpenDocument()
             ) { uri: Uri? ->
                 if (uri != null) {
+                    // Ambil hak akses file, lalu langsung panggil WhatsApp
+                    try {
+                        contentResolver.takePersistableUriPermission(
+                            uri,
+                            Intent.FLAG_GRANT_READ_URI_PERMISSION
+                        )
+                    } catch (e: Exception) {
+                        e.printStackTrace()
+                    }
                     kirimKeWhatsApp()
-                    Toast.makeText(this, "Berhasil memuat file stiker!", Toast.LENGTH_SHORT).show()
                 } else {
-                    Toast.makeText(this, "Batal memilih file", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(this, "Batal pilih file", Toast.LENGTH_SHORT).show()
                 }
             }
 
@@ -38,14 +46,17 @@ class MainActivity : ComponentActivity() {
                     contentAlignment = Alignment.Center
                 ) {
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                        Text(text = "Sticx Sticker Injector Engine", style = MaterialTheme.typography.headlineSmall)
+                        Text(
+                            text = "Sticx Sticker Injector", 
+                            style = MaterialTheme.typography.headlineSmall
+                        )
                         Spacer(modifier = Modifier.height(20.dp))
                         
                         Button(onClick = { 
-                            // Menggunakan Open Document / All Files biar masuk ke File Manager internal
-                            filePickerLauncher.launch("*/*") 
+                            // Buka file manager dan filter file gambar/webp
+                            filePickerLauncher.launch(arrayOf("image/*")) 
                         }) {
-                            Text(text = "BUKA FILE MANAGER & PILIH STIKER")
+                            Text(text = "PILIH .WEBP & TAMBAH KE WA")
                         }
                     }
                 }
@@ -61,11 +72,17 @@ class MainActivity : ComponentActivity() {
             putExtra("sticker_pack_name", "Sticker Rycl")
             type = "vnd.android.cursor.item/vnd.com.system.sticx.sticker"
         }
+        
         try {
             startActivity(intent)
         } catch (e: Exception) {
-            Toast.makeText(this, "Akses gagal: Pastikan WhatsApp resmi terinstall!", Toast.LENGTH_LONG).show()
-            e.printStackTrace()
+            // Kalau gagal pakai intent umum, paksa tembak paket WA resmi
+            try {
+                intent.setPackage("com.whatsapp")
+                startActivity(intent)
+            } catch (err: Exception) {
+                Toast.makeText(this, "Gagal membuka WhatsApp!", Toast.LENGTH_LONG).show()
+            }
         }
     }
 }
