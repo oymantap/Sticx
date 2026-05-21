@@ -1,9 +1,13 @@
 package com.system.sticx
 
 import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
+import android.widget.Toast
 import androidx.activity.ComponentActivity
+import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
@@ -16,6 +20,19 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
+            // ALAT BUAT BUKA FILE MANAGER / GALERI
+            val filePickerLauncher = rememberLauncherForActivityResult(
+                contract = ActivityResultContracts.GetContent()
+            ) { uri: Uri? ->
+                if (uri != null) {
+                    // Kalau user selesai milih file .webp, langsung oper ke WhatsApp
+                    kirimKeWhatsApp()
+                    Toast.makeText(this, "File terpilih! Mengirim ke WhatsApp...", Toast.LENGTH_SHORT).show()
+                } else {
+                    Toast.makeText(this, "Batal milih file", Toast.LENGTH_SHORT).show()
+                }
+            }
+
             MaterialTheme {
                 Box(
                     modifier = Modifier.fillMaxSize(),
@@ -25,8 +42,12 @@ class MainActivity : ComponentActivity() {
                         Text(text = "Sticx Sticker Injector Engine", style = MaterialTheme.typography.headlineSmall)
                         Spacer(modifier = Modifier.height(20.dp))
                         
-                        Button(onClick = { kirimKeWhatsApp() }) {
-                            Text(text = "KIRIM STIKER KE WHATSAPP")
+                        // TOMBOL UTAMA BUAT BUKA GALERI
+                        Button(onClick = { 
+                            // Membuka file picker khusus untuk mencari file .webp atau gambar
+                            filePickerLauncher.launch("image/*") 
+                        }) {
+                            Text(text = "PILIH .WEBP & KIRIM KE WA")
                         }
                     }
                 }
@@ -34,7 +55,6 @@ class MainActivity : ComponentActivity() {
         }
     }
 
-    // Fungsi "Alat" buat nembak data stiker langsung tembus ke WA
     private fun kirimKeWhatsApp() {
         val intent = Intent().apply {
             action = "com.whatsapp.intent.action.ENABLE_STICKER_PACK"
@@ -46,7 +66,7 @@ class MainActivity : ComponentActivity() {
         try {
             startActivity(intent)
         } catch (e: Exception) {
-            // Handle kalau WA ga terinstall atau error
+            Toast.makeText(this, "WhatsApp tidak ditemukan!", Toast.LENGTH_LONG).show()
             e.printStackTrace()
         }
     }
