@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
-    <!-- Izin visibilitas agar bisa mendeteksi dan mengirim ke WhatsApp -->
     <queries>
         <package android:name="com.whatsapp" />
         <package android:name="com.whatsapp.w4b" />
@@ -16,7 +15,11 @@
         android:label="Sticx"
         android:supportsRtl="true"
         android:theme="@android:style/Theme.Material.NoActionBar">
-        
+
+        <meta-data
+            android:name="com.whatsapp.sticker_pack_authority"
+            android:value="com.system.sticx.stickercontentprovider"/>
+
         <activity
             android:name=".MainActivity"
             android:exported="true"
@@ -32,8 +35,12 @@
             android:authorities="com.system.sticx.stickercontentprovider"
             android:enabled="true"
             android:exported="true"
-            android:readPermission="com.whatsapp.sticker.READ" />
+            android:grantUriPermissions="true"
+            android:readPermission="com.whatsapp.sticker.READ">
+            <intent-filter>
+                <action android:name="com.whatsapp.sticker.CONTENT_PROVIDER" />
+            </intent-filter>
+        </provider>
 
     </application>
 </manifest>
-
