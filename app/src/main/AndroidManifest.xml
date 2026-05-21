@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
+    <!-- Izin Akses Media untuk Memilih Gambar/Sticker -->
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" android:maxSdkVersion="32" />
     <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />
     <uses-permission android:name="android.permission.READ_MEDIA_VIDEO" />
@@ -8,11 +9,12 @@
     <application
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
+        android:roundIcon="@mipmap/ic_launcher"
         android:label="Sticx"
-        android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@android:style/Theme.Material.NoActionBar">
         
+        <!-- Activity Utama Aplikasi (Jetpack Compose) -->
         <activity
             android:name=".MainActivity"
             android:exported="true"
@@ -23,6 +25,7 @@
             </intent-filter>
         </activity>
 
+        <!-- Jembatan Integrasi WhatsApp Sticker Pack -->
         <provider
             android:name=".StickerContentProvider"
             android:authorities="com.system.sticx.stickercontentprovider"
@@ -32,3 +35,4 @@
 
     </application>
 </manifest>
+
