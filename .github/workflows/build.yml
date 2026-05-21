@@ -24,6 +24,10 @@ jobs:
     - name: Grant Execute Permission for Gradle
       run: chmod +x gradlew
 
+    # TRIK AMAN: Turunin paksa wrapper lokal ke 8.5 biar ga bentrok dependency UI-nya
+    - name: Downgrade Gradle Wrapper via Terminal
+      run: ./gradlew wrapper --gradle-version 8.5
+
     - name: Build Debug APK
       run: ./gradlew assembleDebug
 
@@ -32,3 +36,4 @@ jobs:
       with:
         name: Sticx
         path: app/build/outputs/apk/debug/app-debug.apk
+
