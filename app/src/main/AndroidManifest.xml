@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
-    <!-- Izin biar aplikasi lu dibolehin ngomong sama WhatsApp -->
+    <!-- Izin visibilitas agar bisa mendeteksi dan mengirim ke WhatsApp -->
     <queries>
         <package android:name="com.whatsapp" />
         <package android:name="com.whatsapp.w4b" />

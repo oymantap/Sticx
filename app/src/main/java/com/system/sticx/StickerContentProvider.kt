@@ -3,17 +3,23 @@ package com.system.sticx
 import android.content.ContentProvider
 import android.content.ContentValues
 import android.content.UriMatcher
+import android.content.res.AssetFileDescriptor
 import android.database.Cursor
 import android.database.MatrixCursor
 import android.net.Uri
-import java.io.File
 
 class StickerContentProvider : ContentProvider() {
 
-    private val authority = "com.system.sticx.stickercontentprovider"
+    companion object {
+        const val AUTHORITY = "com.system.sticx.stickercontentprovider"
+        // Variabel statis untuk menyimpan URI file .webp yang lu pilih di galeri/file manager
+        var uristikerTerpilih: Uri? = null
+    }
+
     private val uriMatcher = UriMatcher(UriMatcher.NO_MATCH).apply {
-        addURI(authority, "metadata", 1)
-        addURI(authority, "stickers/*", 2)
+        addURI(AUTHORITY, "metadata", 1)
+        addURI(AUTHORITY, "stickers/pack1", 2)
+        addURI(AUTHORITY, "stickers_asset/pack1/*", 3)
     }
 
     override fun onCreate(): Boolean = true
@@ -22,24 +28,45 @@ class StickerContentProvider : ContentProvider() {
         uri: Uri, projection: Array<String>?, selection: String?,
         selectionArgs: Array<String>?, sortOrder: String?
     ): Cursor? {
-        val code = uriMatcher.match(uri)
-        val cursor = MatrixCursor(arrayOf("sticker_pack_id", "sticker_pack_name", "sticker_pack_publisher", "sticker_file_name"))
-        
-        if (code == 1) {
-            // Kasih tahu WhatsApp info pack stiker lu
-            cursor.addRow(arrayOf("pack1", "Sticker Rycl", "Sticx Engine", "logo.webp"))
-        } else if (code == 2) {
-            // WhatsApp minta daftar file stiker di dalam pack
-            // Di sini kita daftarin file .webp lu (misal nama filenya: stiker1.webp)
-            cursor.addRow(arrayOf("pack1", "Sticker Rycl", "Sticx Engine", "stiker1.webp"))
+        return when (uriMatcher.match(uri)) {
+            1 -> {
+                val cursor = MatrixCursor(arrayOf(
+                    "android_play_store_link", "ios_app_store_link",
+                    "sticker_pack_id", "sticker_pack_name",
+                    "sticker_pack_publisher", "sticker_pack_tray_icon",
+                    "is_whitelisted", "image_data_version", "avoid_cache"
+                ))
+                // Menjadikan file .webp lu sekaligus sebagai Icon Tray (sampul pack) di WA
+                cursor.addRow(arrayOf("", "", "pack1", "Sticker Rycl", "Sticx Engine", "stiker_anda.webp", 0, 1, 0))
+                cursor
+            }
+            2 -> {
+                val cursor = MatrixCursor(arrayOf("sticker_file_name", "sticker_emoji"))
+                cursor.addRow(arrayOf("stiker_anda.webp", "😎,🔥"))
+                cursor
+            }
+            else -> null
         }
-        return cursor
+    }
+
+    override fun openAssetFile(uri: Uri, mode: String): AssetFileDescriptor? {
+        // Ketika WA meminta file gambar stikernya, kita suapi langsung pakai URI file yang lu pilih tadi
+        if (uriMatcher.match(uri) == 3) {
+            val fileUri = uristikerTerpilih ?: return null
+            return try {
+                context?.contentResolver?.openAssetFileDescriptor(fileUri, "r")
+            } catch (e: Exception) {
+                null
+            }
+        }
+        return null
     }
 
     override fun getType(uri: Uri): String? {
         return when (uriMatcher.match(uri)) {
             1 -> "vnd.android.cursor.dir/vnd.com.system.sticx.sticker"
             2 -> "vnd.android.cursor.item/vnd.com.system.sticx.sticker"
+            3 -> "image/webp"
             else -> null
         }
     }

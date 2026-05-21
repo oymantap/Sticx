@@ -20,23 +20,27 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
-            // Launcher buat buka File Manager asli HP
+            // Launcher untuk membuka File Manager asli Android (Storage Access Framework)
             val filePickerLauncher = rememberLauncherForActivityResult(
                 contract = ActivityResultContracts.OpenDocument()
             ) { uri: Uri? ->
                 if (uri != null) {
-                    // Ambil hak akses file, lalu langsung panggil WhatsApp
                     try {
+                        // Minta izin akses persisten sistem agar file bisa dibaca oleh WhatsApp via provider
                         contentResolver.takePersistableUriPermission(
                             uri,
                             Intent.FLAG_GRANT_READ_URI_PERMISSION
                         )
+                        // Simpan lokasi file yang lu pilih ke Provider
+                        StickerContentProvider.uristikerTerpilih = uri
+                        
+                        // Eksekusi kirim ke WhatsApp
+                        kirimKeWhatsApp()
                     } catch (e: Exception) {
-                        e.printStackTrace()
+                        Toast.makeText(this, "Gagal memproses file berkas", Toast.LENGTH_SHORT).show()
                     }
-                    kirimKeWhatsApp()
                 } else {
-                    Toast.makeText(this, "Batal pilih file", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(this, "Batal memilih file", Toast.LENGTH_SHORT).show()
                 }
             }
 
@@ -46,17 +50,14 @@ class MainActivity : ComponentActivity() {
                     contentAlignment = Alignment.Center
                 ) {
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                        Text(
-                            text = "Sticx Sticker Injector", 
-                            style = MaterialTheme.typography.headlineSmall
-                        )
+                        Text(text = "Sticx Sticker Injector", style = MaterialTheme.typography.headlineSmall)
                         Spacer(modifier = Modifier.height(20.dp))
                         
                         Button(onClick = { 
-                            // Buka file manager dan filter file gambar/webp
+                            // Membuka File Manager murni untuk memilih berkas gambar/webp
                             filePickerLauncher.launch(arrayOf("image/*")) 
                         }) {
-                            Text(text = "PILIH .WEBP & TAMBAH KE WA")
+                            Text(text = "PILIH FILE .WEBP LU & KIRIM")
                         }
                     }
                 }
@@ -68,20 +69,22 @@ class MainActivity : ComponentActivity() {
         val intent = Intent().apply {
             action = "com.whatsapp.intent.action.ENABLE_STICKER_PACK"
             putExtra("sticker_pack_id", "pack1")
-            putExtra("sticker_pack_authority", "com.system.sticx.stickercontentprovider")
+            putExtra("sticker_pack_authority", StickerContentProvider.AUTHORITY)
             putExtra("sticker_pack_name", "Sticker Rycl")
             type = "vnd.android.cursor.item/vnd.com.system.sticx.sticker"
         }
         
         try {
+            // Coba kirim ke WhatsApp standar
+            intent.setPackage("com.whatsapp")
             startActivity(intent)
         } catch (e: Exception) {
-            // Kalau gagal pakai intent umum, paksa tembak paket WA resmi
             try {
-                intent.setPackage("com.whatsapp")
+                // Coba kirim ke WhatsApp Business jika WA biasa tidak ada
+                intent.setPackage("com.whatsapp.w4b")
                 startActivity(intent)
             } catch (err: Exception) {
-                Toast.makeText(this, "Gagal membuka WhatsApp!", Toast.LENGTH_LONG).show()
+                Toast.makeText(this, "WhatsApp tidak merespon/tidak terpasang!", Toast.LENGTH_LONG).show()
             }
         }
     }
